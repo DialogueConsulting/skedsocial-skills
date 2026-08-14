@@ -1,0 +1,28 @@
+{
+  "name": "sked-skills",
+  "owner": {
+    "name": "Sked Social",
+    "email": "hello@skedsocial.com"
+  },
+  "metadata": {
+    "description": "Sked Social skills for Claude — connect your brand kit, calendar, analytics, and ideas directly into your AI workflow."
+  },
+  "plugins": [
+    {
+      "name": "sked-skills",
+      "source": {
+        "source": "github",
+        "repo": "DialogueConsulting/skedsocial-skills"
+      },
+      "description": "Sked Social skills for Claude — Brand Kit setup, calendar review, analytics summaries, and idea planning. Requires a Sked Social account on a Professional, Accelerate, or Enterprise plan.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Sked Social"
+      },
+      "homepage": "https://skedsocial.com",
+      "repository": "https://github.com/DialogueConsulting/skedsocial-skills",
+      "license": "MIT",
+      "keywords": ["sked", "social-media", "brand-kit", "analytics", "content-calendar", "ideas"]
+    }
+  ]
+}

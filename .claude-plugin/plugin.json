@@ -1,0 +1,14 @@
+{
+  "name": "sked-skills",
+  "description": "Sked Social skills for Claude — Brand Kit setup, calendar review, analytics summaries, and idea planning. Requires a Sked Social account on a Professional, Accelerate, or Enterprise plan with the Sked MCP server configured.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sked Social",
+    "email": "hello@skedsocial.com"
+  },
+  "homepage": "https://skedsocial.com",
+  "repository": "https://github.com/DialogueConsulting/skedsocial-skills",
+  "license": "MIT",
+  "keywords": ["sked", "social-media", "brand-kit", "analytics", "content-calendar", "ideas"],
+  "skills": "./skills"
+}
