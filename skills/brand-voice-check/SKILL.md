@@ -180,7 +180,7 @@ After delivering a Rewrite, check whether the content came from a Sked Idea.
 
 > "This looks like it came from a Sked Idea — want me to save the rewritten version back? I'll update the caption/copy brief in the Idea Planner."
 
-Wait for confirmation. If yes: call `sked-client:update_idea` with the idea's `_id` and the relevant updated field (`caption` for captions, `copyBrief` for copy briefs). Confirm: "Updated in Sked — [Idea title] now has the revised version."
+Wait for confirmation. If yes: call `sked-client:update_idea` with the idea's `_id` and set `copyBrief` to the rewritten version. Confirm: "Updated in Sked — [Idea title] now has the revised version."
 
 **If the content is freeform (not from a Sked object):** Do not offer to save back. The user is workshopping.
 
