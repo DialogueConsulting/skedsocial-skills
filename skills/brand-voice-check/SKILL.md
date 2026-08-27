@@ -57,7 +57,7 @@ Extract and hold:
 |---|---|---|
 | Brand description | `brandDescriptionResult` | Fallback when no ToV profile; context on who the brand serves |
 | ToV profiles | `toneOfVoiceProfiles[]` | Primary evaluation source |
-| Active ToV profile | First profile with a non-placeholder name | The voice to evaluate against |
+| Active ToV profile | If there’s only one non-placeholder profile, use it; if multiple exist, ask the user to choose (see Edge Cases) | The voice to evaluate against |
 | Content pillars | `list_content_labels` filtered to `status: "ACTIVE"`, `type: "CONTENT_PILLAR"` | Context check — does the content serve a pillar? |
 | Custom instructions | `customInstructions` (draftCaption, copyBrief, etc.) | Supplementary rules for caption and copy evaluation |
 
