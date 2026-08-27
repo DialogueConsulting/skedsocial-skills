@@ -10,6 +10,7 @@ AI skills that bring your Sked brand data — Brand Kit, content calendar, analy
 | `calendar-review` | 2-week content calendar with local timezone conversion, gap detection, pillar/platform/post-type distribution |
 | `brand-summary` | 30-day analytics summary with period-on-period comparison, pillar performance, and platform breakdown |
 | `ideas` | View, write, generate, and import ideas into the Sked Idea Planner |
+| `brand-voice-check` | Check content against your brand's Tone of Voice (Review) or rewrite it to sound on-brand (Rewrite), using your Brand Kit from Sked |
 
 ---
 
@@ -83,6 +84,7 @@ Once installed and connected to Sked, start a conversation and say what you need
 - **"What does my calendar look like?"** → `calendar-review` pulls the next fortnight with timezone conversion and gap detection
 - **"How's [brand] doing this month?"** → `brand-summary` pulls 30-day analytics with period-on-period comparison
 - **"Generate 5 ideas for next week"** → `ideas` uses your Brand Kit as the creative brief and presents options to save
+- **"Does this sound like us?"** → `brand-voice-check` reviews pasted content against your Tone of Voice profile, or rewrites it to match
 
 Skills can be combined across a session. Run a calendar review, spot a gap, then generate ideas to fill it — all in the same conversation.
 
