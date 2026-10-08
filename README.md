@@ -57,24 +57,24 @@ For Team and Enterprise workspaces, an owner or permitted administrator adds the
 
 ## Install in ChatGPT
 
-ChatGPT connects to the hosted MCP server from its Plugins settings; it does not install the Claude skill files directly from GitHub. This repository provides the skill package and the documented server URL.
+ChatGPT connects to the hosted MCP server through Apps & Connectors; it does not install the Claude skill files directly from GitHub. This repository provides the skill package and the documented server URL.
 
 ### Individual setup
 
-1. In ChatGPT on the web, open **Settings → Plugins**.
-2. Select **Add custom MCP server**.
+1. In ChatGPT on the web, open **Settings → Apps & Connectors → Advanced Settings** and enable **Developer Mode**.
+2. Return to **Apps & Connectors** and create a connector.
 3. Name it **Sked Social** and enter `https://app-mcp.skedsocial.com/mcp` as the Server URL.
 4. Choose OAuth authentication and accept the server’s discovered configuration.
-5. Review the custom-server safety prompt, create the plugin, and complete Sked sign-in.
-6. Install or enable the resulting Sked Social plugin in a new chat, then ask it to work with your Sked data.
+5. Review the connector safety prompt, create the connector, and complete Sked sign-in.
+6. Enable the Sked Social connector in a new chat, then ask it to work with your Sked data.
 
 ### Business, Enterprise, and Edu workspace setup
 
-1. An administrator enables developer mode or custom MCP plugins, as required by the workspace.
-2. In **Workspace settings → Plugins**, create a custom MCP server using `https://app-mcp.skedsocial.com/mcp`.
+1. An administrator enables **Developer Mode** under **Settings → Apps & Connectors → Advanced Settings**, as required by the workspace.
+2. In **Workspace settings → Apps & Connectors**, create a connector using `https://app-mcp.skedsocial.com/mcp`.
 3. Scan the tools, sign in to Sked when prompted, and test both a read action and a confirmation-gated write action.
-4. Publish the approved plugin to the workspace.
-5. Members enable the plugin and complete OAuth with their own Sked account.
+4. Publish the approved connector to the workspace.
+5. Members enable the connector and complete OAuth with their own Sked account.
 
 Workspace administrators should test and approve the tool permissions before publishing. OAuth is per person: users only access Sked data available to their own account.
 
@@ -93,9 +93,9 @@ The `ideas` skill asks for confirmation before it writes to Sked. Review the pro
 ## Troubleshooting and access
 
 - **Sign-in does not start:** reconnect using the HTTPS MCP server URL. A `401` response before sign-in is expected; it tells the client where to discover the Sked OAuth flow.
-- **Connection expired:** reconnect the Sked Social plugin/connector and complete OAuth again. You can also revoke its access from your Sked account or the relevant AI product’s connected-app settings.
+- **Connection expired:** reconnect the Sked Social connector and complete OAuth again. You can also revoke its access from your Sked account or the relevant AI product’s connected-app settings.
 - **No Brand Groups or data:** verify the signed-in Sked account has access to the intended Brand Group and is on an eligible plan.
-- **Workspace connector missing:** ask a ChatGPT or Claude workspace administrator to approve and publish the custom MCP plugin/connector.
+- **Workspace connector missing:** ask a ChatGPT or Claude workspace administrator to approve and publish the custom connector.
 
 For Sked account and product support, visit the [Sked Help Centre](https://support.skedsocial.com). For issues with these skills or connection documentation, [open an issue](https://github.com/DialogueConsulting/skedsocial-skills/issues) in this repository.
 
