@@ -44,7 +44,7 @@ Call `Sked_Social:list_brand_groups` and `Sked_Social:list_social_accounts`.
 
 Filter the account list by `brandGroupId`. Resolve the target like this:
 
-- **A specific account named** (e.g. "Marigold & Rye Instagram"): match on Brand Group name plus platform.
+- **A specific account named** (e.g. "Marigold & Rye Instagram"): match on Brand Group name, platform, and account name or ID. If the named account cannot be matched exactly, or more than one account matches, list the candidates and ask which account to use. Never substitute another account on the same platform.
 - **A Brand Group named with no platform**: if the group has more than one account, ask which platforms to use. Do not assume every account.
 - **A platform named with no brand** (e.g. "my Instagram"): if exactly one account on that platform exists, use it. If several exist, list them by Brand Group and ask.
 - **One Brand Group exists in total**: use it silently.
