@@ -198,6 +198,15 @@ the media assets.
 
 ---
 
+## When invoked by a batch skill
+
+When `import-posts-from-csv` calls this skill, the whole batch has already been confirmed.
+
+- Do not ask for confirmation in Step 6. The inputs arrive fully resolved.
+- Use the idempotency key supplied by the caller instead of building one, so re-running the same CSV never creates a second draft.
+- If a step can't be completed (a preview comes back `invalid`, or media is missing), stop, return the reason to the caller, and let it carry on with the next row. Don't question the user about a single row.
+---
+
 ## Guardrails
 
 - Never schedule or publish. This skill only creates unscheduled drafts.

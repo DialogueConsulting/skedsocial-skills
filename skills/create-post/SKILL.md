@@ -223,6 +223,16 @@ that were dropped, or posts that still need approval before they can publish.
 
 ---
 
+## When invoked by a batch skill
+
+When `import-posts-from-csv` calls this skill, the whole batch has already been confirmed.
+
+- The date, local time and timezone arrive resolved and confirmed. Skip the "ask first" checks in Step 3 and convert them to UTC as normal.
+- Per-row values (first comment, approval status, pillar) arrive from the caller. Apply them in Steps 6 and 7 as if they came from a source document.
+- Pass the caller's idempotency key to `create-draft`. The schedule key in Step 4 is built from the draft ID, so a re-run returns the original result.
+- If a step can't be completed (a rejected schedule, a failed update), stop, return the reason to the caller, and let it carry on with the next row. Don't question the user about a single row.
+---
+
 ## Guardrails
 
 - Never schedule without a date and time the user has stated or confirmed.

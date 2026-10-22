@@ -13,6 +13,8 @@ Use your Sked Brand Kit, content calendar, analytics, ideas, and brand voice fro
 | `brand-voice-check` | Review content against your brand voice or rewrite it to match your Brand Kit |
 | `create-draft` | Create an unscheduled draft from media already in your Sked Library, with your caption saved exactly as written and an optional content pillar and approval status |
 | `create-post` | Create and schedule a post with a date and time, then optionally tailor captions, first comments, media, times, and approval statuses per platform from your own source material such as a spreadsheet or Notion page |
+| `import-ideas-from-csv` | Import a content-planner CSV into the Sked Idea Planner as new ideas — maps columns, dedupes on caption, previews, and verifies a test idea before writing the rest |
+| `import-posts-from-csv` | Turn a content-planner CSV into drafts and scheduled posts using `create-draft` and `create-post`, with suggested posting times from audience activity and ideas for rows whose media is not in the Library yet |
 
 ## Prerequisites
 
@@ -94,16 +96,21 @@ Once connected, ask Claude to:
 - **“Does this sound like us?”** to review or rewrite content in your brand voice.
 - **“Save this image as a draft for [brand] on Instagram”** to create an unscheduled draft from media in your Library.
 - **“Schedule this for Tuesday at 9am”** to create and schedule a post, with optional platform-specific captions, creative, and statuses from your own source material.
+- **“Import this CSV as ideas”** to load a content-planner spreadsheet into the Idea Planner.
+- **“Schedule my content calendar from this CSV”** to turn spreadsheet rows into drafts and scheduled posts.
 
 The `ideas` skill asks for confirmation before it writes to Sked. Review the proposed change before approving it. `create-draft` and `create-post` write through a preview step and ask for confirmation whenever something in your request is ambiguous, such as a date with no time or more than one possible media match.
 
-`create-post` builds on `create-draft`, so install the plugin as a whole rather than copying a single skill.
+The CSV import skills show one preview for the whole file, ask for confirmation, and write a single test item first. Rows with a date but no time get a suggested posting time based on the account's audience activity (Instagram and TikTok only), marked as suggested so you can change it.
+
+`create-post` builds on `create-draft`, and `import-posts-from-csv` builds on `create-draft`, `create-post` and `import-ideas-from-csv`, so install the plugin as a whole rather than copying a single skill.
 
 ## Troubleshooting and access
 
 - **Sign-in does not start:** reconnect using the HTTPS MCP server URL. A `401` response before sign-in is expected; it tells the client where to discover the Sked OAuth flow.
 - **Connection expired:** reconnect the Sked Social connector and complete OAuth again. You can also revoke its access from your Sked account or the relevant AI product’s connected-app settings.
 - **Skills cannot find the Sked tools:** if you set up the connection before the rename from `sked-client`, rename your server entry to `Sked_Social` (Claude) or reconnect the connector named **Sked Social**.
+- **CSV rows became ideas instead of posts:** `import-posts-from-csv` needs every file in a row to already be in your Sked Library. Rows with missing media are saved as ideas so nothing is lost. Upload the files, then run the CSV again. Rows that are already posts are skipped as duplicates.
 - **Media not found when creating a post:** `create-draft` and `create-post` only use media already in your Sked Library. Upload the file there first; the skill will guide you if it is hosted elsewhere.
 - **No Brand Groups or data:** verify the signed-in Sked account has access to the intended Brand Group and is on an eligible plan.
 - **Workspace connector missing:** ask a ChatGPT or Claude workspace administrator to approve and publish the custom connector.
