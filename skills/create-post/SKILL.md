@@ -22,9 +22,11 @@ platform's post after scheduling.
 This skill builds on `create-draft`. It loads that skill for target, media, pillar and draft
 creation, then adds scheduling, per-platform customisation and approval statuses.
 
-Order of work: **create the draft → schedule it → customise each platform's post → set statuses → verify and report.**
-Platform-specific changes can only be made after scheduling, because a draft with several
-accounts is one post, and scheduling is what splits it into one post per account.
+Order of work: **create the draft → validate all source mappings and times → schedule at the earliest resolved time → customise each platform's post → set statuses → verify and report.**
+Platform-specific post updates can only be made after scheduling, because a draft with several
+accounts is one post, and scheduling is what splits it into one post per account. Resolve every
+source mapping before scheduling so an ambiguous or invalid row never leaves a post scheduled
+with unintended content or timing.
 
 ---
 
@@ -58,11 +60,17 @@ versions are applied in Step 6.
 
 ---
 
-## Step 3: Resolve the date and time
+## Step 3: Resolve and validate scheduling inputs
+
+Resolve the timezone, read the source if supplied, and validate all account-specific rows
+before calling `schedule_draft`.
 
 1. **Timezone.** Use the timezone the user states. Otherwise call `Sked_Social:get_post` with the new draft ID and read `userTimezone`.
-2. **Local to UTC.** Combine the user's date and time, apply the timezone with the correct daylight saving offset for that date, and convert to a UTC instant ending in `Z` (for example `2026-10-27T22:00:00Z`).
-3. The instant must be in the future.
+2. **Read the source.** Read a spreadsheet, Notion page, Google Doc or Sheet, attachment, or pasted text with the available source tool. If it cannot be read, ask the user to paste or export the relevant content. Do not schedule until the source is readable or the user explicitly asks to proceed without its customisations.
+3. **Map rows to accounts.** Match each source row to the resolved accounts by exact account name or platform. If a row has no match or could match more than one account, ask which account it applies to and wait. Do not schedule until every source row is resolved or the user explicitly excludes it.
+4. **Resolve fields.** Use the mappings in Step 6. Resolve source media from the Library as in `create-draft` Step 3. If referenced media is not in the Library, do not schedule until it is uploaded or the user explicitly removes that media change. For each source pillar or campaign, call `Sked_Social:list_content_labels` for the account's Brand Group and resolve its name to a label ID. If a name has no exact match or multiple matches, ask the user to clarify before scheduling. If the source or user's request specifies approval statuses, call `Sked_Social:list_post_statuses` and resolve each status by name before scheduling; ask the user to clarify any unmatched status.
+5. **Resolve times.** Use each account's source time when supplied; otherwise use the requested base time. Convert every local time using the timezone's correct daylight saving offset for that date. Each resolved instant must be in the future. When accounts have different times, the earliest resolved instant becomes the initial schedule time; the remaining account times are applied after scheduling in Step 6.
+6. **Confirm inferred inputs.** Apply the confirmation rules below to all resolved dates, times, timezones, targets, and source mappings before scheduling.
 
 **When to ask first.** Proceed without asking only if the date, time, timezone and targets are
 all explicit and nothing was inferred. Ask the user to confirm if any of these apply:
@@ -74,12 +82,13 @@ all explicit and nothing was inferred. Ask the user to confirm if any of these a
 - The time is in the past, or too close to now to schedule
 - It is unclear whether all accounts should post at the same time
 - Any account had a connection warning in `create-draft`
+- A source row or field mapping needed interpretation
 
 When you do ask, show the exact local date, time and timezone you intend to use, plus the accounts.
 
 `schedule_draft` gives **every** account on the draft the same time. If the user wants
-different times per platform, schedule at the earliest time and set the others in Step 6
-with `update_post`.
+different times per account, schedule at the earliest resolved instant and set the remaining
+times in Step 6 with `update_post`.
 
 ---
 
@@ -110,10 +119,15 @@ Existing approval and publish gates still apply to the scheduled posts.
 
 Scheduling creates one post per account. Get each post's ID from the `schedule_draft` result.
 If the result does not list them, find them with `Sked_Social:review_calendar` for the
-Brand Group around the scheduled time, matching on account and caption.
+Brand Group around the initial schedule time and identify each post using the resolved account ID,
+exact initial scheduled instant, and other available post details. Use a result only when the lookup
+identifies exactly one post for that account. Account and caption alone are not sufficient to
+identify a post. If the lookup is missing or ambiguous, do not update that account's post; ask
+the user to resolve it instead.
 
 Call `Sked_Social:get_post` on each one to confirm it is scheduled and to read its current
-caption, media, labels, status and time. Hold this, because Step 6 compares against it.
+account, caption, media, labels, status and time. Confirm the account and initial scheduled
+instant match the intended post before any update. Hold this, because Step 6 compares against it.
 
 If there is no platform-specific source material and no status was requested, skip to Step 8.
 
@@ -124,47 +138,27 @@ If there is no platform-specific source material and no status was requested, sk
 Do this step when the user provides source material with per-platform content, or asks for
 different captions, creative or timing per platform.
 
-### 6a. Read the source
+### 6a. Map the validated source to the posts
 
-The source may be a spreadsheet, a Notion page, a Google Doc or Sheet, an attached file, or text
-pasted into the chat. Read it with whatever tool is available for that source (a Notion or
-Google Drive connector, the file reader for attachments).
-
-If the source can't be read (no connector, no access, or an unsupported format), ask the user to
-paste the relevant content or export it as CSV, and continue from that.
-
-### 6b. Map the content to the posts
-
-Look for a section, row or column per platform or account, matched on platform name or account
-name. Recognise these fields:
+Use the source and account mappings resolved before scheduling in Step 3. Recognise these fields:
 
 | Field in the source | Applied with |
 |---|---|
 | Caption or copy | `update_post` `caption` |
 | First comment | `update_post` `firstComment` |
 | Media, creative or file names | `update_post` `mediaAssetIds` |
-| Pillar or campaign | `update_post` `labelIds` |
+| Pillar or campaign | Resolve the name to a label ID in Step 3; apply with `update_post` `labelIds` |
 | Date and time | `update_post` `scheduledAt` |
 | Approval status | Step 7 |
 
 Rules:
 
 - Platforms with nothing different from the base post are left alone.
-- If a source row can't be tied to one of the scheduled accounts, or two rows could both fit an account, ask which one applies. Don't guess.
+- If a source row could fit more than one account, resolve it with the user before scheduling. Don't guess.
 - Use caption and first-comment text exactly as written in the source.
 - A platform-specific time must be a future instant. Convert it from local time as in Step 3.
 
-### 6c. Resolve any media
-
-Resolve media named in the source from the Library using `create-draft` Step 3, and use the
-asset IDs in the order the source gives them. `mediaAssetIds` replaces the post's whole media
-set, so always send the complete ordered list.
-
-If the media is hosted outside the Library (a Notion file, Drive link, a design export), use
-the "If the media isn't in the Library" steps in `create-draft`. Apply everything that is ready
-now, leave the posts waiting on media as they are, and tell the user which ones are waiting.
-
-### 6d. Apply
+### 6b. Apply
 
 Show a short plan, then apply it:
 
@@ -176,14 +170,21 @@ LinkedIn  — caption, first comment, time (Wed 28 Oct, 9:00am)
 Facebook  — no changes
 ```
 
-Ask for a yes first only when the mapping in 6b was ambiguous. Otherwise apply and report.
+Any mapping that needed interpretation must already have been confirmed in Step 3. Otherwise
+apply and report without asking again.
 
 For each post, call `Sked_Social:update_post` with the `postId` and only the fields that differ
 from what `get_post` returned in Step 5. Do the posts one at a time. Notes:
 
+- For a source pillar or campaign, merge its resolved label ID(s) with the post's existing
+  `labelIds`, removing duplicates. `labelIds` replaces the whole set, so never omit existing
+  labels when sending this field.
+- If media is hosted outside the Library, use the "If the media isn't in the Library" steps in
+  `create-draft`. Do not update that post's media until it is available; tell the user which
+  posts are waiting.
 - Media is checked against the platform rules of every account on the post. If the update is rejected, explain which rule failed and leave that post unchanged.
 - `firstComment` is only supported on some platforms and post types. If it is rejected, say so and carry on with the other fields and posts.
-- `labelIds` replaces the existing labels, so send the full set you want. Labels must belong to the account's Brand Group.
+- Labels must belong to the account's Brand Group.
 - If the response includes `accountWarnings`, surface them.
 
 ---
@@ -193,9 +194,8 @@ from what `get_post` returned in Step 5. Do the posts one at a time. Notes:
 Do this step only if the user asked for a status ("send these for review") or the source data
 states one, either for all posts or per platform. Otherwise leave the posts in their current status.
 
-1. Call `Sked_Social:list_post_statuses`.
-2. Match each requested status by name, ignoring case. If nothing matches, show the available names and ask.
-3. Call `Sked_Social:update_post` with the `postId` and `status` set to the matched status ID, on each post that needs it.
+1. Use the status IDs resolved in Step 3.
+2. Call `Sked_Social:update_post` with the `postId` and `status` set to the matched status ID, on each post that needs it.
 
 Statuses stay subject to the user's permissions and the workspace's approval rules. If an
 update is refused, say which post and why.
@@ -227,9 +227,13 @@ that were dropped, or posts that still need approval before they can publish.
 
 - Never schedule without a date and time the user has stated or confirmed.
 - Never schedule in the past or guess a timezone. Convert local time to UTC with the correct daylight saving offset.
+- Resolve and validate all supplied source mappings, account matches, media, labels and per-account times before scheduling. If clarification is needed, leave the draft unscheduled.
+- When per-account times differ, initially schedule at the earliest resolved instant.
 - Never change caption or first-comment text from the source or the request. Use it exactly as written.
 - Never use a new idempotency key to retry an uncertain schedule result. Retry with the identical inputs and key.
 - Read each post with `get_post` before updating it, and send only the fields that changed.
+- Never infer a post ID from account and caption alone. Use IDs returned by `schedule_draft` or a lookup that identifies exactly one post, and verify its account and scheduled time before updating.
+- Resolve source label names to IDs before scheduling; when updating labels, preserve existing labels and send the full deduplicated set.
 - Never claim a post will publish if its approval status may block it. Report the status name as returned.
 - Never surface internal IDs, status IDs, tokens, or raw JSON to the user.
 - Never guess a Library collection, and never fabricate asset, account or label IDs.

@@ -18,7 +18,7 @@ Use this skill when the user says things like:
 - "brand kit setup"
 - "let's set up the brand"
 
-Also trigger when `get_brand_kit_setup_status` returns `isBrandKitConfigured: false` or any `configuredFields` are false, as a proactive prompt.
+Also trigger when `Sked_Social:get_brand_kit_setup_status` returns `isBrandKitConfigured: false` or any `configuredFields` are false, as a proactive prompt.
 
 ---
 
@@ -41,19 +41,19 @@ This skill walks through Brand Kit setup in a single guided session. It opens wi
 Load all of these in **parallel** at the start — do not make sequential calls:
 
 ```
-list_brand_groups
-get_brand_kit
-get_brand_kit_setup_status
-list_social_accounts
-list_content_labels
-get_brand_group_analytics_summary
+Sked_Social:list_brand_groups
+Sked_Social:get_brand_kit
+Sked_Social:get_brand_kit_setup_status
+Sked_Social:list_social_accounts
+Sked_Social:list_content_labels
+Sked_Social:get_brand_group_analytics_summary
 ```
 
 Write tools used as needed:
 ```
-update_brand_description
-create_content_label
-update_brand_kit_custom_instructions
+Sked_Social:update_brand_description
+Sked_Social:create_content_label
+Sked_Social:update_brand_kit_custom_instructions
 ```
 
 Web tools used in Brand Description step:
@@ -121,8 +121,8 @@ Five completeness criteria (assess silently — do not show the rubric):
 - — Not configured (optional — do not show as ❌)
 
 **Connected Accounts**
-- If `list_social_accounts` returns accounts for this Brand Group → ✅ accounts connected
-- If `get_brand_kit_setup_status` shows `hasConnectedAccounts: false` but accounts exist in `list_social_accounts` → note gently: "Accounts are connected — you may want to check in Sked Settings that the Brand Kit integration is fully linked."
+- If `Sked_Social:list_social_accounts` returns accounts for this Brand Group → ✅ accounts connected
+- If `Sked_Social:get_brand_kit_setup_status` shows `hasConnectedAccounts: false` but accounts exist in `Sked_Social:list_social_accounts` → note gently: "Accounts are connected — you may want to check in Sked Settings that the Brand Kit integration is fully linked."
 - If no accounts in either → flag clearly: "No social accounts connected yet. You'll want to add these in Sked before generating content."
 
 ### Presenting the health check
@@ -164,7 +164,7 @@ Ask for the URL. Then:
 3. Generate a Brand Description from the fetched content (150–200 words, third person, factual).
 4. Assess against the five criteria. If geography is missing but the website implies a region, include it.
 5. Show the draft to the user with a brief note on what it covers. Ask for confirmation or edits.
-6. On confirmation: `update_brand_description` with `inputs.websiteUrls` set to the fetched URL and `brandDescriptionResult` set to the agreed text.
+6. On confirmation: `Sked_Social:update_brand_description` with `inputs.websiteUrls` set to the fetched URL and `brandDescriptionResult` set to the agreed text.
 
 **Path B — Manual**
 
@@ -172,7 +172,7 @@ Ask conversationally — frame the questions in the brand's tone if ToV is loade
 
 > "Tell me about [brand] — what do they do, who are their customers, and what makes them different from others in the space?"
 
-Accept freeform. Follow up if anything from the five criteria is unclear. Then generate a 150–200 word description, show it, confirm, and save with `update_brand_description` using `brandDescriptionResult` only (no `websiteUrls`).
+Accept freeform. Follow up if anything from the five criteria is unclear. Then generate a 150–200 word description, show it, confirm, and save with `Sked_Social:update_brand_description` using `brandDescriptionResult` only (no `websiteUrls`).
 
 ### Quality gate
 
@@ -243,16 +243,16 @@ Show all proposed pillars together for review:
 >
 > Does this feel right? You can rename anything, swap the emoji, or ask me to rethink a pillar before I create them."
 
-Wait for explicit confirmation before calling `create_content_label`. Do not write partial sets.
+Wait for explicit confirmation before calling `Sked_Social:create_content_label`. Do not write partial sets.
 
 ### Writing pillars
 
-On confirmation, call `create_content_label` for each pillar with:
+On confirmation, call `Sked_Social:create_content_label` for each pillar with:
 - `type: "CONTENT_PILLAR"`
 - `groupId`
 - `name`, `description`, `emoji`, `color`
 
-If existing pillars need to be retired (user confirms), call `archive_content_label` for each one. Do not archive without explicit user instruction.
+If existing pillars need to be retired (user confirms), call `Sked_Social:archive_content_label` for each one. Do not archive without explicit user instruction.
 
 ### Return pillar descriptions
 
@@ -282,7 +282,7 @@ Generate a short instruction for each from the conversation. Show before saving.
 
 If they want to set the remaining three (`copyBrief`, `creativeBrief`, `hashtags`) as well, proceed. Otherwise save what's been agreed and note the others can be added later.
 
-Save with `update_brand_kit_custom_instructions`.
+Save with `Sked_Social:update_brand_kit_custom_instructions`.
 
 ---
 
