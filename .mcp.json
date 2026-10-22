@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "sked-client": {
+    "Sked_Social": {
       "type": "http",
       "url": "https://app-mcp.skedsocial.com/mcp"
     }

@@ -21,7 +21,7 @@ read-only skill — it never creates, edits, or moves content.
 
 ## Step 1: Resolve the Brand Group
 
-Call `sked-client:list_brand_groups`.
+Call `Sked_Social:list_brand_groups`.
 
 - If only one group is returned — use it silently.
 - If multiple groups are returned:
@@ -37,7 +37,7 @@ Hold the resolved `groupId` (or list of groupIds) for all subsequent calls.
 
 Run both calls before proceeding — they inform display logic and labelling throughout.
 
-**Accounts:** Call `sked-client:list_social_accounts` with the resolved `groupId`.
+**Accounts:** Call `Sked_Social:list_social_accounts` with the resolved `groupId`.
 
 Build an account map: `{ accountId → { name, platform } }`.
 
@@ -45,7 +45,7 @@ Determine the multi-account rule: for each platform code (FB, IG, LI, TT, YT, PI
 - One account for that platform → display platform shortcode only (e.g. `FB`)
 - Two or more accounts for that platform → display shortcode + account name (e.g. `FB — Sked Social Official`)
 
-**Labels:** Call `sked-client:list_content_labels` with the resolved `groupId`.
+**Labels:** Call `Sked_Social:list_content_labels` with the resolved `groupId`.
 
 Build a label map: `{ labelId → { name, type } }`. Used to resolve label names on calendar items and to identify content pillars for distribution analysis.
 
@@ -53,7 +53,7 @@ Build a label map: `{ labelId → { name, type } }`. Used to resolve label names
 
 ## Step 3: Fetch the calendar
 
-Call `sked-client:review_calendar` with:
+Call `Sked_Social:review_calendar` with:
 ```
 groupId: <resolved groupId>
 preset: "fortnight"
