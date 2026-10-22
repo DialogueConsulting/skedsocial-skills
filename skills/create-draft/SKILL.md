@@ -34,15 +34,20 @@ Pull these out of the user's message:
 | Approval status | No | Only applied if the user asks, or the source data states one |
 
 If a required input is missing, ask for everything that is missing in a single message.
-If the user gives a publish date or time, stop and use `create-post` instead.
+If the user directly asks for a draft and gives a publish date or time, use `create-post` instead.
+When `create-post` invokes this skill, do not redirect based on its date or time; continue with
+the target, media, caption and optional pillar it supplies. If it passes resolved account,
+asset or label IDs, reuse them and skip the corresponding lookups below.
 
 ---
 
 ## Step 2: Resolve the target accounts
 
-Call `Sked_Social:list_brand_groups` and `Sked_Social:list_social_accounts`.
+Unless `create-post` supplied resolved Brand Group and account IDs, call
+`Sked_Social:list_brand_groups` and `Sked_Social:list_social_accounts`.
 
-Filter the account list by `brandGroupId`. Resolve the target like this:
+When IDs are supplied, use the caller's resolved account details and skip target matching.
+Otherwise, filter the account list by `brandGroupId` and resolve the target like this:
 
 - **A specific account named** (e.g. "Marigold & Rye Instagram"): match on Brand Group name, platform, and account name or ID. If the named account cannot be matched exactly, or more than one account matches, list the candidates and ask which account to use. Never substitute another account on the same platform.
 - **A Brand Group named with no platform**: if the group has more than one account, ask which platforms to use. Do not assume every account.
@@ -72,6 +77,9 @@ preview in Step 5 and report plainly if it is rejected.
 
 The Sked MCP can only use media that is already in the Library. It cannot upload files or
 import from a URL.
+
+If `create-post` supplied resolved asset IDs, use them in the given order and skip the Library
+search. Otherwise:
 
 1. Call `Sked_Social:search_media_collections`.
    - If the user named a collection (e.g. "recent uploads"), pass a short literal `query` from that name.
@@ -108,8 +116,8 @@ Offer to continue with any media that is already in the Library while the rest i
 
 ## Step 4: Resolve the content pillar (only if the user named one)
 
-Call `Sked_Social:list_content_labels` with the Brand Group ID. Filter to active labels and
-match the pillar (or campaign) by name.
+Unless `create-post` supplied the resolved label IDs, call `Sked_Social:list_content_labels`
+with the Brand Group ID. Filter to active labels and match the pillar (or campaign) by name.
 
 - Labels only apply when every target account belongs to the same Brand Group. If the accounts span groups, tell the user the pillar can't be applied and carry on without it.
 - If the name doesn't match, show the available pillars by name and ask. Never invent a label ID.
@@ -162,10 +170,11 @@ Create it?
 ```
 
 **Idempotency key.** Printable ASCII, no spaces, at most 200 characters. Build it from the date
-plus the first 8 characters of the first account ID and first asset ID, for example
-`draft-20261022-a2b2f92b-6ad97ee8`. If the user deliberately wants a second identical draft,
-add a suffix such as `-2`. Retrying with the same inputs and key returns the original draft
-instead of creating a duplicate, so it is safe to retry after an uncertain result.
+and a stable SHA-256 digest of a canonical representation of the complete draft request:
+all account IDs, ordered asset IDs, the exact caption, and all label IDs. For example,
+`draft-20261022-<digest>`. If the user deliberately wants a second identical draft, add a
+suffix such as `-2`. Retrying with the same inputs and key returns the original draft instead
+of creating a duplicate, so it is safe to retry after an uncertain result.
 
 If the commit reports a stale or expired token, preview again and commit with the new token.
 

@@ -41,6 +41,12 @@ Collect everything `create-draft` needs (target, media, caption, optional pillar
 | Source for platform-specific content | No | A spreadsheet, Notion page, doc or pasted text with per-platform copy, media, times or statuses |
 | Approval status | No | Only applied if the user asks, or the source data states one |
 
+If the user supplied source material, read it now and map its base caption, target account(s),
+media and optional pillar. Resolve the accounts, media and pillar using `create-draft` Steps 2–4
+before invoking that skill. Do not ask the user to repeat values already provided by the source.
+If any required base field is still missing after reading the source, ask for it now. Do not
+invoke `create-draft` until its required inputs are available.
+
 If there is no date or time at all, ask for it now, together with anything else missing, in a single message.
 If the user gave no date and wants a draft only, use `create-draft` instead.
 
@@ -52,6 +58,7 @@ Invoke the `create-draft` skill and follow it through its commit step (Step 6). 
 
 - Skip `create-draft` Steps 7 and 8. Statuses are applied after scheduling here, and this skill gives the final report.
 - If `create-draft` needs to ask the user anything, fold the date and time into the same message so the user only confirms once.
+- Pass any account, asset and label IDs already resolved in Step 1 so `create-draft` can reuse them.
 - Carry forward: the draft ID, the resolved accounts (name and platform), the Brand Group ID, the caption and the media.
 
 If the user supplied platform-specific source material, the caption passed to `create-draft` is
@@ -62,11 +69,10 @@ versions are applied in Step 6.
 
 ## Step 3: Resolve and validate scheduling inputs
 
-Resolve the timezone, read the source if supplied, and validate all account-specific rows
-before calling `schedule_draft`.
+Resolve the timezone and validate all account-specific rows before calling `schedule_draft`.
 
 1. **Timezone.** Use the timezone the user states. Otherwise call `Sked_Social:get_post` with the new draft ID and read `userTimezone`.
-2. **Read the source.** Read a spreadsheet, Notion page, Google Doc or Sheet, attachment, or pasted text with the available source tool. If it cannot be read, ask the user to paste or export the relevant content. Do not schedule until the source is readable or the user explicitly asks to proceed without its customisations.
+2. **Use the source.** Use the source read and base fields mapped in Step 1. If it could not be read, ask the user to paste or export the relevant content. Do not schedule until the source is readable or the user explicitly asks to proceed without its customisations.
 3. **Map rows to accounts.** Match each source row to the resolved accounts by exact account name or platform. If a row has no match or could match more than one account, ask which account it applies to and wait. Do not schedule until every source row is resolved or the user explicitly excludes it.
 4. **Resolve fields.** Use the mappings in Step 6. Resolve source media from the Library as in `create-draft` Step 3. If referenced media is not in the Library, do not schedule until it is uploaded or the user explicitly removes that media change. For each source pillar or campaign, call `Sked_Social:list_content_labels` for the account's Brand Group and resolve its name to a label ID. If a name has no exact match or multiple matches, ask the user to clarify before scheduling. If the source or user's request specifies approval statuses, call `Sked_Social:list_post_statuses` and resolve each status by name before scheduling; ask the user to clarify any unmatched status.
 5. **Resolve times.** Use each account's source time when supplied; otherwise use the requested base time. Convert every local time using the timezone's correct daylight saving offset for that date. Each resolved instant must be in the future. When accounts have different times, the earliest resolved instant becomes the initial schedule time; the remaining account times are applied after scheduling in Step 6.
@@ -237,7 +243,7 @@ When `import-posts-from-csv` calls this skill, the whole batch has already been 
 
 - Never schedule without a date and time the user has stated or confirmed.
 - Never schedule in the past or guess a timezone. Convert local time to UTC with the correct daylight saving offset.
-- Resolve and validate all supplied source mappings, account matches, media, labels and per-account times before scheduling. If clarification is needed, leave the draft unscheduled.
+- Read source material and map its base inputs before invoking `create-draft`. Resolve and validate all supplied source mappings, account matches, media, labels and per-account times before scheduling. If clarification is needed, leave the draft unscheduled.
 - When per-account times differ, initially schedule at the earliest resolved instant.
 - Never change caption or first-comment text from the source or the request. Use it exactly as written.
 - Never use a new idempotency key to retry an uncertain schedule result. Retry with the identical inputs and key.

@@ -118,9 +118,13 @@ pillar, format, notes and owner exactly as `import-ideas-from-csv` maps them.
 Call `Sked_Social:review_calendar` with the `groupId`, an explicit `startDate` and `endDate` that
 cover every dated row, and `draftLimit: 50`. Read `userTimezone` from the result.
 
-A row is a duplicate if an existing scheduled post or draft on the same account has the same
-caption (trimmed, case-insensitive). For rows that would become ideas, check the caption against
-active ideas from `Sked_Social:list_ideas_by_group`. Skip duplicates and list them.
+For each target account, a row is a duplicate if an existing scheduled post or draft on that
+account has the same caption (trimmed, case-insensitive). Exclude duplicate accounts from the
+row's targets, but continue with its nonduplicate accounts; record which platforms were skipped
+as partial duplicates, and pass only the nonduplicate accounts and their mappings to the create
+skill. Skip the row only if all its target accounts are duplicates. For rows
+that would become ideas, check the caption against active ideas from
+`Sked_Social:list_ideas_by_group`. Skip duplicate ideas and list them.
 
 Limit: undated drafts are only checked against the newest 50. If `availableDrafts.hasMore` is true
 and the CSV has undated rows, say so in the summary. Stable idempotency keys (Step 9) are the
@@ -158,8 +162,8 @@ time but no date, a default time for platforms with no audience data, disconnect
 
 Then show:
 
-- Counts by route: scheduled, drafts, falling back to ideas, duplicates skipped, ignored, skipped for no caption.
-- A compact table of the first 3 rows with every mapped field.
+- Counts by route: scheduled, drafts, falling back to ideas, duplicates and partial targets skipped, ignored, skipped for no caption.
+- A compact table of the first 3 rows with every mapped field, including targets skipped as duplicates.
 - A one-line list for each remaining row: local date · time · platform · pillar · route. Mark suggested times.
 - Times in the user's local timezone, never UTC.
 - Every flag.
@@ -198,6 +202,7 @@ Imported [N] rows into [Brand]:
 Then list:
 
 - Times that were suggested rather than supplied, in local time.
+- Targets skipped as partial duplicates.
 - Ideas created because media was missing, and the upload steps from `create-draft` ("If the media isn't in the Library"), so the user can re-run the CSV after uploading. Rows that are already posts will be skipped as duplicates.
 - Failed rows with a plain-language reason.
 - Anything dropped (disconnected accounts) or left blank (unmatched pillar or status).
