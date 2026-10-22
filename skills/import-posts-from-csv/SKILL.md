@@ -56,8 +56,9 @@ Report any header you could not map and ask what to do with it. Ignore rows the 
 and skip fully empty rows.
 
 In the same script, print a **row key** for each row: the first 24 hex characters of a SHA-256 hash
-of the Brand Group, the target platforms and accounts, the media file names in order, and the
-caption. It is used for stable idempotency keys and stable suggested times in the later steps.
+of the Brand Group, the source row number, target platforms and accounts, media file names in order,
+the caption, and the normalized publish date and time. It is used for stable idempotency keys and
+stable suggested times in the later steps.
 
 ### Column mapping
 
