@@ -53,7 +53,7 @@ Ignore rows the user says to ignore (for example test rows). Skip fully empty ro
 
 | CSV column | Idea field | Rule |
 |---|---|---|
-| Publish Date | `scheduledAt` | Date only, since Ideas have no time. If the year is missing, infer it from the weekday (for example "Sun 1 Nov" is the upcoming year where 1 Nov falls on a Sunday) and check the weekday matches. Send as `YYYY-MM-DDT12:00:00.000Z`. This sets the idea's calendar date only. It never schedules a post. |
+| Publish Date | `scheduledAt` | Date only, since Ideas have no time. Use the timezone stated by the user; otherwise call `Sked_Social:review_calendar` with the `groupId` and use its `userTimezone`. If no timezone can be established, ask before writing. If the year is missing, infer it from the weekday (for example "Sun 1 Nov" is the upcoming year where 1 Nov falls on a Sunday) and check the weekday matches. Treat the date as local, use local noon as its date-only anchor, and convert that instant to UTC using the resolved timezone (including daylight saving) before sending `scheduledAt`; verify it converts back to the intended local date. This sets the idea's calendar date only. It never schedules a post. |
 | Platform | `platforms` | Instagram → IG, Facebook → FB, Google Business or GMB → GMB, TikTok → TT, YouTube → YT, LinkedIn → LI, Pinterest → PI, X or Twitter → TW, Threads → TH. Unknown value: leave empty and flag. |
 | Format | `creativeBrief` | Prefix, for example "Reel — ". Ideas have no format field. If the visual notes already start with the same format word, skip the prefix so it isn't repeated. |
 | Visual Notes | `creativeBrief` | Appended after the format prefix: "Reel — <visual notes>". |
