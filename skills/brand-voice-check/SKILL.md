@@ -20,7 +20,7 @@ Claude detects the mode from the user's intent and routes accordingly.
 
 ## Step 1: Resolve the Brand Group
 
-Call `sked-client:list_brand_groups`.
+Call `Sked_Social:list_brand_groups`.
 
 - One group → use it silently.
 - Multiple groups → if the user named a brand, match and proceed silently. If not, present the list by name and ask which brand to check against.
@@ -48,8 +48,8 @@ If both signals are present, or the intent is ambiguous: ask one question.
 
 Run both calls in parallel before doing anything else:
 
-1. `sked-client:get_brand_kit` with `groupId`
-2. `sked-client:list_content_labels` with `groupId`
+1. `Sked_Social:get_brand_kit` with `groupId`
+2. `Sked_Social:list_content_labels` with `groupId`
 
 Extract and hold:
 
@@ -180,7 +180,7 @@ After delivering a Rewrite, check whether the content came from a Sked Idea.
 
 > "This looks like it came from a Sked Idea — want me to save the rewritten version back? I'll update the caption/copy brief in the Idea Planner."
 
-Wait for confirmation. If yes: call `sked-client:update_idea` with the idea's `_id` and set `copyBrief` to the rewritten version. Confirm: "Updated in Sked — [Idea title] now has the revised version."
+Wait for confirmation. If yes: call `Sked_Social:update_idea` with the idea's `_id` and set `copyBrief` to the rewritten version. Confirm: "Updated in Sked — [Idea title] now has the revised version."
 
 **If the content is freeform (not from a Sked object):** Do not offer to save back. The user is workshopping.
 

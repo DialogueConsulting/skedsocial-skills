@@ -22,7 +22,7 @@ All writes require a confirmation step before calling the Sked API, except Mode 
 
 ## Step 1: Resolve the Brand Group
 
-Call `sked-client:list_brand_groups`.
+Call `Sked_Social:list_brand_groups`.
 
 - If only one group is returned — use it silently.
 - If multiple groups are returned:
@@ -51,16 +51,16 @@ If the signal is ambiguous, default to **C — Generate ideas**.
 
 Run these calls before entering the mode — they inform writing, generating, and tagging.
 
-**Brand Kit:** Call `sked-client:get_brand_kit` with `groupId`.
+**Brand Kit:** Call `Sked_Social:get_brand_kit` with `groupId`.
 - Extracts: brand description, tone of voice profile (name + profile ID), brand values, content pillars with their label IDs.
 - If the Brand Kit is incomplete or not set up: note it silently and proceed — the skill still works with less context.
 - **Default behaviour:** Brand Kit is always used as the creative brief. If the user says "ignore the brand kit" or provides their own brief, use their brief only. If they say "use this as well as the brand kit", layer it on top.
 
-**Active pillars:** Call `sked-client:list_content_labels` with `groupId`.
+**Active pillars:** Call `Sked_Social:list_content_labels` with `groupId`.
 - Filter to `status: "ACTIVE"` and `type: "CONTENT_PILLAR"`.
 - Hold the list of `{ _id, name }` pairs — used for tagging and pillar assignment.
 
-**Connected accounts (Mode C and B only):** Call `sked-client:list_social_accounts` with `groupId`.
+**Connected accounts (Mode C and B only):** Call `Sked_Social:list_social_accounts` with `groupId`.
 - Extract the set of active platform types — used for platform suggestions when generating or enriching ideas.
 
 ---
@@ -69,7 +69,7 @@ Run these calls before entering the mode — they inform writing, generating, an
 
 Show the active ideas for the brand group.
 
-1. Call `sked-client:list_ideas_by_group` with `groupId` and `status: "active"`.
+1. Call `Sked_Social:list_ideas_by_group` with `groupId` and `status: "active"`.
 2. Output a table sorted by stage (`working` before `pad`), then by `createdAt` descending:
 
 | Title | Stage | Pillar | Platforms | Topic |
@@ -142,8 +142,8 @@ Wait for explicit confirmation before writing.
 ### Step B4: Write to Sked
 
 For each confirmed idea:
-- If the idea has only a title (no topicDetails or other enrichment): call `sked-client:smart_create_idea` with `title`, `groupId`, `contentPillarLabelId` (if resolved), `platforms`, and `stage`. Smart Create expands the title using Brand Kit context.
-- If the idea has topicDetails, creativeBrief, or copyBrief already filled: call `sked-client:create_idea` with all available fields.
+- If the idea has only a title (no topicDetails or other enrichment): call `Sked_Social:smart_create_idea` with `title`, `groupId`, `contentPillarLabelId` (if resolved), `platforms`, and `stage`. Smart Create expands the title using Brand Kit context.
+- If the idea has topicDetails, creativeBrief, or copyBrief already filled: call `Sked_Social:create_idea` with all available fields.
 
 Write ideas sequentially. After all writes complete:
 
@@ -199,7 +199,7 @@ Ask which to save: *"Which would you like to add to the Pad? Say 'all', list num
 
 ### Step C4: Save selected ideas
 
-For each selected idea, call `sked-client:smart_create_idea` with:
+For each selected idea, call `Sked_Social:smart_create_idea` with:
 - `title` — the generated title
 - `groupId`
 - `contentPillarLabelId` — the resolved label ID for the assigned pillar
@@ -219,7 +219,7 @@ the Sked Pad as soon as the call is made. Claude's value here is in the strategi
 
 ### Step D1: Create from URL
 
-Call `sked-client:create_idea_from_url` with:
+Call `Sked_Social:create_idea_from_url` with:
 - `groupId`
 - `url` — the URL from the user's message
 - `stage: "pad"` (default)
@@ -253,7 +253,7 @@ could post about this!") are not useful.
 
 ### Step D4: Apply suggestions (optional)
 
-If the user wants any suggestions applied, call `sked-client:update_idea` with:
+If the user wants any suggestions applied, call `Sked_Social:update_idea` with:
 - `topicDetails` — the chosen angle written as a brief
 - `creativeBrief` — visual or format direction
 - `copyBrief` — caption hook or copy angle

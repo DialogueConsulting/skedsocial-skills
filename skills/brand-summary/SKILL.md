@@ -24,7 +24,7 @@ breakdown. This is a read-only skill.
 
 ## Step 1: Resolve the Brand Group
 
-Call `sked-client:list_brand_groups`.
+Call `Sked_Social:list_brand_groups`.
 
 - If only one group is returned — use it silently.
 - If multiple groups are returned:
@@ -58,7 +58,7 @@ Hold the computed datetimes. You will display dates in the user's local timezone
 
 Run both calls before proceeding — they inform every section of the output.
 
-**Analytics:** Call `sked-client:get_brand_group_analytics_summary` with:
+**Analytics:** Call `Sked_Social:get_brand_group_analytics_summary` with:
 ```
 groupId:          <resolved groupId>
 period:           { since: <ISO>, until: <ISO> }
@@ -78,7 +78,7 @@ The response includes:
 - `accounts` — per-account detail including platform-specific `interactionsBreakdown`
 - `userTimezone` — IANA timezone to use for all date display
 
-**Labels:** Call `sked-client:list_content_labels` with `groupId`.
+**Labels:** Call `Sked_Social:list_content_labels` with `groupId`.
 Filter to `status: "ACTIVE"` and `type: "CONTENT_PILLAR"`.
 This gives the full active pillar list — including pillars with zero posts this period, which `labelPerformance` omits.
 
