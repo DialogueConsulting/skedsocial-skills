@@ -15,8 +15,8 @@ description: >
 
 Manage the Sked Idea Planner for a Brand Group. Four modes — view backlog, write ideas, generate
 ideas, or import from URL. Claude detects intent from the message and routes to the right mode.
-All writes require a confirmation step before calling the Sked API, except Mode D where
-`create_idea_from_url` saves immediately by design.
+All writes require a confirmation step before calling the Sked API, except Mode D, which creates
+the idea straight away by design.
 
 ---
 
@@ -141,9 +141,18 @@ Wait for explicit confirmation before writing.
 
 ### Step B4: Write to Sked
 
-For each confirmed idea:
-- If the idea has only a title (no topicDetails or other enrichment): call `Sked_Social:smart_create_idea` with `title`, `groupId`, `contentPillarLabelId` (if resolved), `platforms`, and `stage`. Smart Create expands the title using Brand Kit context.
-- If the idea has topicDetails, creativeBrief, or copyBrief already filled: call `Sked_Social:create_idea` with all available fields.
+For each confirmed idea, call `Sked_Social:create_idea` with:
+- `groupId`
+- `title`
+- `stage` (default `"pad"`, unless the user said "working")
+- `platforms` if known
+- `labels` with the resolved pillar label ID, if known
+- `topicDetails`, `creativeBrief`, `copyBrief` — any the user supplied or enrichment produced
+
+Only pass `smartCreateType: "title-smart"` when the user gave a long pasted note with no separate
+title (80 characters or more as the title) — this lets Sked generate a title and keep the text as
+`topicDetails`. Do not pass it when the user supplied a proper title; a title over 80 characters
+would otherwise be regenerated.
 
 Write ideas sequentially. After all writes complete:
 
@@ -199,13 +208,16 @@ Ask which to save: *"Which would you like to add to the Pad? Say 'all', list num
 
 ### Step C4: Save selected ideas
 
-For each selected idea, call `Sked_Social:smart_create_idea` with:
-- `title` — the generated title
+For each selected idea, call `Sked_Social:create_idea` with:
 - `groupId`
-- `contentPillarLabelId` — the resolved label ID for the assigned pillar
+- `title` — the generated title
+- `labels` — the resolved pillar label ID, in an array
 - `platforms` — the suggested platform list
 - `topicDetails` — the one-line brief
 - `stage: "pad"`
+
+Do not pass `smartCreateType` — the titles are already written, and short generated titles don't
+need it.
 
 Write sequentially. Confirm count on completion:
 > *"Added [N] ideas to [Brand]'s Pad."*
@@ -214,32 +226,40 @@ Write sequentially. Confirm count on completion:
 
 ## Mode D — URL import
 
-`create_idea_from_url` saves immediately — there is no draft-then-confirm step. The idea lands in
-the Sked Pad as soon as the call is made. Claude's value here is in the strategic layer added after.
+The idea lands in the Sked Pad as soon as the call is made — there is no draft-then-confirm step.
+Claude's value here is in picking the right pillar and in the strategic layer added after.
 
-### Step D1: Create from URL
-
-Call `Sked_Social:create_idea_from_url` with:
-- `groupId`
-- `url` — the URL from the user's message
-- `stage: "pad"` (default)
-- `contentPillarLabelId` — omit to let Sked auto-assign the first active pillar, unless the user specified one
-
-The API fetches the link preview, sets the title from the page, attaches the URL, and creates the idea.
-
-### Step D2: Read the content
+### Step D1: Read the content
 
 Fetch and read the URL content (using WebFetch or equivalent) to understand what the page is about.
 Do not rely on the title alone.
 
-### Step D3: Present what was created + strategic suggestions
+### Step D2: Pick the pillar
+
+Choose the best-fit active pillar from the Step 3 list using the page content and the Brand Kit.
+Honour a pillar the user named explicitly. If the read in Step D1 failed, use the first active
+pillar to match prior behaviour. If there are no active pillars, pass no label.
+
+### Step D3: Create
+
+Call `Sked_Social:create_idea` with:
+- `groupId`
+- `title` — the URL, with `smartCreateType: "title-smart"`
+- `stage: "pad"`
+- `labels` — the pillar label ID from Step D2, if any
+
+This fetches the link preview and sets the title from the page. If the link doesn't end up
+attached to the Idea, call `Sked_Social:fetch_idea_link_preview` with the URL first and pass its
+result in the `link` parameter of `create_idea` instead.
+
+### Step D4: Present what was created + strategic suggestions
 
 Show the user what landed in Sked, then offer 2–3 suggestions grounded in the URL content and
 the Brand Kit:
 
 ```
 Added to [Brand]'s Pad:
-**[Title from URL]** · [Auto-assigned pillar]
+**[Title from URL]** · [Chosen pillar]
 
 Here's how this could work for [Brand]:
 
@@ -251,23 +271,23 @@ Here's how this could work for [Brand]:
 Suggestions should be specific to the URL content + the brand's strategy. Generic angles ("You
 could post about this!") are not useful.
 
-### Step D4: Apply suggestions (optional)
+### Step D5: Apply suggestions (optional)
 
 If the user wants any suggestions applied, call `Sked_Social:update_idea` with:
 - `topicDetails` — the chosen angle written as a brief
 - `creativeBrief` — visual or format direction
 - `copyBrief` — caption hook or copy angle
-- `contentPillarLabelId` — if the user wants to override the auto-assigned pillar
+- `labels` — if the user wants to override the chosen pillar
 
 ---
 
 ## Guardrails
 
-- **Never write to Sked without confirmation**, except Mode D where `create_idea_from_url` saves immediately by design. Always make the save behaviour clear to the user upfront.
+- **Never write to Sked without confirmation**, except Mode D, which saves immediately by design. Always make the save behaviour clear to the user upfront.
 - **Stage is always `"pad"`** for new ideas unless the user explicitly says "working". Don't promote ideas to `"working"` without being asked.
 - **Never fabricate pillar IDs.** Always resolve pillar names against the active label list from `list_content_labels`. If a pillar can't be matched, leave `labels` empty and note it.
 - **Brand Kit is the brief by default.** If not set up, proceed without it — don't block the skill.
 - **Mode B enrichment is one offer, not a negotiation.** Ask once. If the user says no, save as-is without re-asking per idea.
 - **Mode C ideas must be specific.** Reject any generated idea that's too generic before presenting it to the user. Rewrite or replace it.
-- **Mode D suggestions must be grounded** in actual URL content read in Step D2 + the Brand Kit. Never suggest angles that could apply to any brand or any URL.
+- **Mode D suggestions must be grounded** in actual URL content read in Step D1 + the Brand Kit. Never suggest angles that could apply to any brand or any URL.
 - **Never surface internal IDs, field names, or raw API responses** to the user.
