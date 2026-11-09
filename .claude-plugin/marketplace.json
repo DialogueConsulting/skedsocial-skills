@@ -10,10 +10,7 @@
   "plugins": [
     {
       "name": "sked-skills",
-      "source": {
-        "source": "github",
-        "repo": "DialogueConsulting/skedsocial-skills"
-      },
+      "source": "./"
       "description": "Sked Social skills for Claude — Brand Kit setup, calendar review, analytics summaries, idea planning, brand voice checking, draft creation, post scheduling, and CSV import, with a bundled OAuth-connected Sked MCP server. Requires a Sked Social account on a Professional, Accelerate, or Enterprise plan.",
       "version": "1.3.0",
       "author": {
