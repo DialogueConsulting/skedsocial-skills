@@ -248,9 +248,7 @@ Call `Sked_Social:create_idea` with:
 - `stage: "pad"`
 - `labels` — the pillar label ID from Step D2, if any
 
-This fetches the link preview and sets the title from the page. If the link doesn't end up
-attached to the Idea, call `Sked_Social:fetch_idea_link_preview` with the URL first and pass its
-result in the `link` parameter of `create_idea` instead.
+Before the initial `create_idea` call, call `Sked_Social:fetch_idea_link_preview` with the URL and pass its result in the `link` parameter. Do not retry `create_idea` after an Idea has already been created, since that would create a duplicate.
 
 ### Step D4: Present what was created + strategic suggestions
 
