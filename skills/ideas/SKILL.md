@@ -146,7 +146,7 @@ For each confirmed idea, call `Sked_Social:create_idea` with:
 - `title`
 - `stage` (default `"pad"`, unless the user said "working")
 - `platforms` if known
-- `labels` with the resolved pillar label ID, if known
+- `labels` — an array containing the resolved pillar label ID, if known
 - `topicDetails`, `creativeBrief`, `copyBrief` — any the user supplied or enrichment produced
 
 Only pass `smartCreateType: "title-smart"` when the user gave a long pasted note with no separate
