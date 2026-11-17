@@ -39,11 +39,11 @@ Collect these before starting. If something required is missing, ask. Don't assu
 
 ### Step 1: Verify the brand group
 
-Call `list_brand_groups` and match the name the user gave. If there is no clear match, stop, list the available brand groups and ask which one they meant. Don't write anything until the brand group is confirmed.
+Call `Sked_Social:list_brand_groups` and match the name the user gave. If there is no clear match, stop, list the available brand groups and ask which one they meant. Don't write anything until the brand group is confirmed.
 
 ### Step 2: Load the Brand Kit
 
-Call `get_brand_kit` with the brand group ID. Use the brand description, tone of voice profiles, custom instructions and any content pillars as the filter for Step 4. Also note the brand's location or region if the Brand Kit or accounts make it clear. It decides which regional dates apply.
+Call `Sked_Social:get_brand_kit` with the brand group ID. Use the brand description, tone of voice profiles, custom instructions and any content pillars as the filter for Step 4. Also note the brand's location or region if the Brand Kit or accounts make it clear. It decides which regional dates apply.
 
 **If the Brand Kit is empty or missing:** soft block. Say:
 
@@ -78,7 +78,11 @@ Compare each date with the Brand Kit:
 
 ### Step 5: Check the calendar for existing items
 
-Call `review_calendar` with the brand group ID and `startDate` / `endDate` for the timeframe. Skip any date where a matching note, idea or post already exists, so nothing is doubled up. Count skipped dates for the summary.
+Call `Sked_Social:review_calendar` with `groupId` set to the brand group ID and `startDate` / `endDate` covering the timeframe. Its `items` include scheduled posts, dated ideas and calendar notes. Widen the window by a day at each end, because item dates and times are returned in UTC and the local date can differ from the UTC date.
+
+Read `userTimezone` from the response. Convert each returned item's `date` + `time` from UTC to `userTimezone` (accounting for daylight saving) and use the resulting **local date** for matching, as `calendar-review` does. Then keep only items whose local date falls inside the requested timeframe.
+
+Skip any holiday where an item on the same local date already covers it: a note with the same or a closely matching title, an idea about the same day, or a post clearly built around it. Match notes and ideas separately, so a note doesn't block an idea (or the reverse) when the output type is `both`. Count skipped dates for the summary.
 
 ### Step 6: Confirm before writing (if output type wasn't specified)
 
@@ -100,18 +104,18 @@ Wait for confirmation before writing. If the user wants a date developed into a 
 
 Write in batches of 10 and report progress between batches if there are more than 20 items.
 
-**Notes**: call `list_social_accounts` once and use the accounts in the brand group. Notes belong to accounts, not brand groups. Then call `add_calendar_note` with:
+**Notes**: call `Sked_Social:list_social_accounts` once with the resolved `groupId`, and use only the accounts it returns for that brand group. Never use accounts from any other brand group. Notes belong to accounts, not brand groups. Then call `Sked_Social:add_calendar_note` with:
 - `accountIds`: the brand group's account IDs
 - `date`: YYYY-MM-DD
 - `timezone`: the user's timezone (shown in `review_calendar` as `userTimezone`)
 - `title`: the date name, for example "World Kindness Day"
 - `description`: one line of context or a suggested angle
 
-**Ideas**: call `create_idea` with:
+**Ideas**: call `Sked_Social:create_idea` with:
 - `groupId`: the brand group ID
 - `title`: the content angle, for example "World Soil Day: where great coffee actually starts"
 - `topicDetails`: what the day is, why it fits the brand, and one or two concrete directions the team could take
-- `scheduledAt`: the date as YYYY-MM-DD, so the idea appears on the calendar that day
+- `scheduledAt`: a UTC ISO datetime, so the idea appears on the calendar on the intended local date. Treat the date as local to `userTimezone` (from `review_calendar`, or the timezone the user states), take local noon on that date as the anchor, convert that instant to UTC (including daylight saving) and send it. Check it converts back to the intended local date. Don't send a bare YYYY-MM-DD
 - `stage`: `pad`
 
 An idea with a `scheduledAt` date shows on the calendar on that day. It is not a scheduled post.
@@ -169,10 +173,10 @@ Mention any dates flagged as sensitive, and say if the run was unfiltered.
 
 ## Tools used
 
-- `list_brand_groups`
-- `get_brand_kit`
-- `review_calendar`
-- `list_social_accounts`
-- `add_calendar_note`
-- `create_idea`
+- `Sked_Social:list_brand_groups`
+- `Sked_Social:get_brand_kit`
+- `Sked_Social:review_calendar`
+- `Sked_Social:list_social_accounts`
+- `Sked_Social:add_calendar_note`
+- `Sked_Social:create_idea`
 - `WebSearch`

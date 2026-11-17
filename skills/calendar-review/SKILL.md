@@ -60,7 +60,7 @@ preset: "fortnight"
 ```
 
 This returns:
-- `items` — scheduled posts and dated ideas in the UTC date window
+- `items` — scheduled posts, dated ideas and calendar notes in the UTC date window
 - `availableDrafts` — undated drafts in the pool
 - `summary` — pre-computed counts by platform, label, item type, day of week
 - `userTimezone` — IANA timezone name (e.g. `Australia/Melbourne`)
