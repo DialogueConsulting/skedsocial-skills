@@ -11,6 +11,7 @@ Use your Sked Brand Kit, content calendar, analytics, ideas, and brand voice fro
 | `brand-summary` | Thirty-day analytics summary with period-on-period, pillar, and platform breakdowns |
 | `ideas` | View, write, generate, and import ideas into the Sked Idea Planner |
 | `brand-voice-check` | Review content against your brand voice or rewrite it to match your Brand Kit |
+| `industry-dates` | Add social media holidays, national days, and industry events to a Brand Group's calendar as notes or ideas, filtered to fit the Brand Kit and checked against what is already scheduled |
 | `create-draft` | Create an unscheduled draft from media already in your Sked Library, with your caption saved exactly as written and an optional content pillar and approval status |
 | `create-post` | Create and schedule a post with a date and time, then optionally tailor captions, first comments, media, times, and approval statuses per platform from your own source material such as a spreadsheet or Notion page |
 | `import-ideas-from-csv` | Import a content-planner CSV into the Sked Idea Planner as new ideas — maps columns, dedupes on caption, previews, and verifies a test idea before writing the rest |
@@ -93,11 +94,14 @@ Once connected, ask Claude to:
 - **“What does my calendar look like?”** for a fortnightly calendar review.
 - **“How’s [brand] doing this month?”** for analytics and period comparisons.
 - **“Generate 5 ideas for next week”** to create ideas from your Brand Kit.
+- **“Add key dates for the next 90 days to [brand]’s calendar”** to add relevant holidays and industry moments as calendar notes or ideas.
 - **“Does this sound like us?”** to review or rewrite content in your brand voice.
 - **“Save this image as a draft for [brand] on Instagram”** to create an unscheduled draft from media in your Library.
 - **“Schedule this for Tuesday at 9am”** to create and schedule a post, with optional platform-specific captions, creative, and statuses from your own source material.
 - **“Import this CSV as ideas”** to load a content-planner spreadsheet into the Idea Planner.
 - **“Schedule my content calendar from this CSV”** to turn spreadsheet rows into drafts and scheduled posts.
+
+The `industry-dates` skill only adds calendar notes and ideas, never posts. When you don't say which, it shows a shortlist and waits for your go-ahead before writing.
 
 The `ideas` skill asks for confirmation before it writes to Sked. Review the proposed change before approving it. `create-draft` and `create-post` write through a preview step and ask for confirmation whenever something in your request is ambiguous, such as a date with no time or more than one possible media match.
 
